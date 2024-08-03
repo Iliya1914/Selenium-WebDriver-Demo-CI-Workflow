@@ -1,0 +1,54 @@
+name: Selenium WebDriver CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Install Chrome
+        run: |
+          powershell -command "Invoke-WebRequest -Uri 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -OutFile 'chrome_installer.exe'"
+          powershell -command "Start-Process 'chrome_installer.exe' -ArgumentList '/silent /install' -NoNewWindow -Wait"
+          powershell -command "Remove-Item -Path 'chrome_installer.exe'"
+
+      - name: Install dependencies
+        run: dotnet restore SeleniumBasicExercise.sln
+
+      - name: Build
+        run: dotnet build SeleniumBasicExercise.sln --no-restore
+
+      - name: Run TestProject1 tests
+        env:
+          CHROMEWEBDRIVER: C:\Program Files\Google\Chrome\Application\chrome.exe
+        run: |
+          echo "Running TestProject1 tests"
+          dotnet test TestProject1/TestProject1.csproj --verbosity normal
+
+      - name: Run TestProject2 tests
+        env:
+          CHROMEWEBDRIVER: C:\Program Files\Google\Chrome\Application\chrome.exe
+        run: |
+          echo "Running TestProject2 tests"
+          dotnet test TestProject2/TestProject2.csproj --verbosity normal
+
+      - name: Run TestProject3 tests
+        env:
+          CHROMEWEBDRIVER: C:\Program Files\Google\Chrome\Application\chrome.exe
+        run: |
+          echo "Running TestProject3 tests"
+          dotnet test TestProject3/TestProject3.csproj --verbosity normal
